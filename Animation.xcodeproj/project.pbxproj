@@ -12,6 +12,8 @@
 		2F28E1E21B7F61E300D0922A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F28E1E11B7F61E300D0922A /* Images.xcassets */; };
 		2F28E1E51B7F61E300D0922A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2F28E1E31B7F61E300D0922A /* LaunchScreen.xib */; };
 		2F28E1F11B7F61E300D0922A /* AnimationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F28E1F01B7F61E300D0922A /* AnimationTests.swift */; };
+		2F28E1FB1B7F641600D0922A /* BreakoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F28E1FA1B7F641600D0922A /* BreakoutViewController.swift */; };
+		2F28E1FD1B7F6A0500D0922A /* BreakoutBallBehavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F28E1FC1B7F6A0500D0922A /* BreakoutBallBehavior.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +36,8 @@
 		2F28E1EA1B7F61E300D0922A /* AnimationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnimationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F28E1EF1B7F61E300D0922A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2F28E1F01B7F61E300D0922A /* AnimationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationTests.swift; sourceTree = "<group>"; };
+		2F28E1FA1B7F641600D0922A /* BreakoutViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BreakoutViewController.swift; sourceTree = "<group>"; };
+		2F28E1FC1B7F6A0500D0922A /* BreakoutBallBehavior.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BreakoutBallBehavior.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +80,8 @@
 			isa = PBXGroup;
 			children = (
 				2F28E1DE1B7F61E300D0922A /* Main.storyboard */,
+				2F28E1FA1B7F641600D0922A /* BreakoutViewController.swift */,
+				2F28E1FC1B7F6A0500D0922A /* BreakoutBallBehavior.swift */,
 				2F28E1D81B7F61E300D0922A /* Supporting Files */,
 			);
 			path = Animation;
@@ -209,7 +215,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F28E1FD1B7F6A0500D0922A /* BreakoutBallBehavior.swift in Sources */,
 				2F28E1DB1B7F61E300D0922A /* AppDelegate.swift in Sources */,
+				2F28E1FB1B7F641600D0922A /* BreakoutViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
