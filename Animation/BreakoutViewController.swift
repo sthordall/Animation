@@ -35,16 +35,37 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
     }
     
     // MARK: Balls
-    let ballRadius : CGFloat = 2
+    let ballRadius : CGFloat = 10
+    var balls = [UIView]()
     
-    func addBall(gesture: UITapGestureRecognizer) {
+    func tapAddBall(gesture: UITapGestureRecognizer) {
         addBall(gesture.locationInView(breakoutView))
     }
     
     func addBall(origin: CGPoint) {
         //TODO: Create round ball and add it to the breakoutview
+        let ball = UIView()
+        ball.center = origin
+        ball.bounds.origin = origin
+        ball.bounds.size.height = ballRadius * 2
+        ball.bounds.size.width = ballRadius * 2
+        ball.layer.cornerRadius = ballRadius
+        ball.backgroundColor = UIColor.randomGirlish
 //        let ball = UIBezierPath(arcCenter: origin, radius: ballRadius, startAngle: 90, endAngle: 90, clockwise: true)
-//        ballBehavior.addBall(ball)
+        ballBehavior.addBall(ball)
+        breakoutView.addSubview(ball)
+        balls.append(ball)
+        breakoutView.setNeedsDisplay()
+    }
+    
+    func tapThrowBalls(gesture: UITapGestureRecognizer) {
+        throwBalls()
+    }
+    
+    func throwBalls() {
+        for ball in balls {
+            
+        }
     }
     
     
@@ -67,18 +88,18 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
     
     // MARK: Gesture Recognizers
     private struct GestureActionSelectors {
-        static let DoubleTapAction : Selector = "addBall:"
-        static let SingleTapAction : Selector = "throwBalls:"
+        static let DoubleTapAction : Selector = "tapAddBall:"
+        static let SingleTapAction : Selector = "tapThrowBalls:"
     }
     
     private lazy var doubleTapGestureRecognizer : UITapGestureRecognizer = { [unowned self] in
-        var lazyDoubleTapGestureRecognizer = UITapGestureRecognizer(target: self.breakoutView, action: GestureActionSelectors.DoubleTapAction)
+        var lazyDoubleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: GestureActionSelectors.DoubleTapAction)
         lazyDoubleTapGestureRecognizer.numberOfTapsRequired = 2
         return lazyDoubleTapGestureRecognizer
     }()
     
     private lazy var singleTapGestureRecognizer : UITapGestureRecognizer = { [unowned self] in
-        var lazySingleTapGestureRecognizer = UITapGestureRecognizer(target: self.breakoutView, action: GestureActionSelectors.SingleTapAction)
+        var lazySingleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: GestureActionSelectors.SingleTapAction)
         lazySingleTapGestureRecognizer.numberOfTapsRequired = 1
         lazySingleTapGestureRecognizer.requireGestureRecognizerToFail(self.doubleTapGestureRecognizer)
         return lazySingleTapGestureRecognizer
