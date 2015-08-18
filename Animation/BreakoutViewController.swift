@@ -12,8 +12,35 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
 
     @IBOutlet weak var breakoutView: UIView!
     
+    // MARK: Breakout game constants
+    private struct BreakoutSettings {
+        static let paddleWidthPercentage : CGFloat = 0.15
+        static let paddleHeight : CGFloat = 15
+        static let paddleFloat : CGFloat = -50
+        static func paddleSize(view : UIView) -> CGSize {
+            let width = view.bounds.size.width * paddleWidthPercentage
+            return CGSize(width: width, height: paddleHeight)
+        }
+        static let paddleBarrierName = "BreakoutPaddle"
+        
+        static let ballRadius : CGFloat = 10
+        static let ballThrowMagnitude : CGFloat = 0.5
+        
+        static let brickRowCount : CGFloat = 4
+        static let bricksColumnCount : CGFloat = 8
+        static let brickSpacing : CGFloat = 20
+        
+        static let bricksViewPercentage : CGFloat = 0.3
+        
+        static func brickSize(view: UIView) -> CGSize {
+            let height = view.bounds.size.height * bricksViewPercentage / brickRowCount - brickSpacing
+            let width = view.bounds.size.width / bricksColumnCount - brickSpacing
+            return CGSize(width: width, height: height)
+        }
+    }
+    
     // MARK: Animators and Behaviors
-    private lazy var animator : UIDynamicAnimator = {
+    private lazy var animator : UIDynamicAnimator = { [unowned self] in
         let lazyAnimator = UIDynamicAnimator(referenceView: self.breakoutView)
         lazyAnimator.delegate = self
         return lazyAnimator
@@ -21,21 +48,41 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
     
     private let ballBehavior = BreakoutBallBehavior()
     
-    // MARK: Bricks
-    let brickRowCount : CGFloat = 4
-    let bricksColumnCount : CGFloat = 8
-    let brickSpacing : CGFloat = 20
-    
-    let bricksViewPercentage : CGFloat = 0.3
-    
-    var brickSize : CGSize {
-        let height = breakoutView.bounds.size.height * bricksViewPercentage / brickRowCount - brickSpacing
-        let width = breakoutView.bounds.size.width / bricksColumnCount - brickSpacing
-        return CGSize(width: width, height: height)
+    // MARK: Paddle
+    private lazy var paddle : UIView = { [unowned self] in
+        var lazyPaddle = UIView()
+        lazyPaddle.center =  CGPoint(x: self.breakoutView.bounds.midX, y: self.breakoutView.bounds.maxY - BreakoutSettings.paddleFloat - BreakoutSettings.paddleHeight)
+        lazyPaddle.bounds.size = BreakoutSettings.paddleSize(self.breakoutView)
+        lazyPaddle.backgroundColor = UIColor.randomBoyish
+        return lazyPaddle
+    }()
+   
+    func grabPaddle(gesture : UIPanGestureRecognizer) {
+        let gesturePoint = gesture.locationInView(breakoutView)
+        switch gesture.state {
+        case .Began: fallthrough
+        case .Changed:
+            paddle.center.x = gesturePoint.x
+            addPaddleBarrier()
+        default: break
+        }
     }
     
+    private func placePaddle(translation: CGPoint) {
+        var origin = paddle.frame.origin
+        origin.x = max(min(origin.x + translation.x, breakoutView.bounds.maxX - BreakoutSettings.paddleSize(breakoutView).width), 0.0)
+        paddle.frame.origin = origin
+        addPaddleBarrier()
+    }
+    
+    private func addPaddleBarrier() {
+        ballBehavior.addBarrier(UIBezierPath(rect: paddle.frame), named: BreakoutSettings.paddleBarrierName)
+    }
+    
+    // MARK: Bricks
+    
     // MARK: Balls
-    let ballRadius : CGFloat = 10
+    
     var balls = [UIView]()
     
     func tapAddBall(gesture: UITapGestureRecognizer) {
@@ -43,17 +90,13 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
     }
     
     func addBall(origin: CGPoint) {
-        //TODO: Create round ball and add it to the breakoutview
         let ball = UIView()
         ball.center = origin
-        ball.bounds.origin = origin
-        ball.bounds.size.height = ballRadius * 2
-        ball.bounds.size.width = ballRadius * 2
-        ball.layer.cornerRadius = ballRadius
+        ball.bounds.size.height = BreakoutSettings.ballRadius * 2
+        ball.bounds.size.width = BreakoutSettings.ballRadius * 2
+        ball.layer.cornerRadius = BreakoutSettings.ballRadius
         ball.backgroundColor = UIColor.randomGirlish
-//        let ball = UIBezierPath(arcCenter: origin, radius: ballRadius, startAngle: 90, endAngle: 90, clockwise: true)
         ballBehavior.addBall(ball)
-        breakoutView.addSubview(ball)
         balls.append(ball)
         breakoutView.setNeedsDisplay()
     }
@@ -63,11 +106,8 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
     }
     
     func throwBalls() {
-        for ball in balls {
-            
-        }
+        ballBehavior.throwBalls(balls, magnitude: BreakoutSettings.ballThrowMagnitude)
     }
-    
     
     // MARK: View Lifecycle
     override func viewDidLoad() {
@@ -75,6 +115,12 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
         animator.addBehavior(ballBehavior)
         breakoutView.addGestureRecognizer(doubleTapGestureRecognizer)
         breakoutView.addGestureRecognizer(singleTapGestureRecognizer)
+        breakoutView.addGestureRecognizer(panGestureRecognizer)
+        breakoutView.addSubview(paddle)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
     }
     
     // MARK: Dynamic Animator Delegation
@@ -90,6 +136,7 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
     private struct GestureActionSelectors {
         static let DoubleTapAction : Selector = "tapAddBall:"
         static let SingleTapAction : Selector = "tapThrowBalls:"
+        static let PanAction : Selector = "grabPaddle:"
     }
     
     private lazy var doubleTapGestureRecognizer : UITapGestureRecognizer = { [unowned self] in
@@ -103,6 +150,11 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
         lazySingleTapGestureRecognizer.numberOfTapsRequired = 1
         lazySingleTapGestureRecognizer.requireGestureRecognizerToFail(self.doubleTapGestureRecognizer)
         return lazySingleTapGestureRecognizer
+    }()
+    
+    private lazy var panGestureRecognizer : UIPanGestureRecognizer = { [unowned self] in
+        var lazyPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: GestureActionSelectors.PanAction)
+        return lazyPanGestureRecognizer
     }()
     
     // MARK: Navigation

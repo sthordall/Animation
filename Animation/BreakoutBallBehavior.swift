@@ -18,7 +18,10 @@ class BreakoutBallBehavior: UIDynamicBehavior {
     private lazy var ballBehavior : UIDynamicItemBehavior = {
         let lazyBehavior = UIDynamicItemBehavior()
         lazyBehavior.allowsRotation = true
-        lazyBehavior.elasticity = CGFloat(self.ballElasticity)
+        lazyBehavior.elasticity = self.ballElasticity
+        lazyBehavior.friction = self.ballFriction
+        lazyBehavior.resistance = self.ballResistance
+        lazyBehavior.allowsRotation = self.ballRotation
         return lazyBehavior
     }()
     
@@ -31,7 +34,10 @@ class BreakoutBallBehavior: UIDynamicBehavior {
     
     // MARK: Public API
     
-    var ballElasticity = 0.5
+    var ballElasticity : CGFloat = 1
+    var ballFriction : CGFloat = 0
+    var ballResistance : CGFloat = 0
+    var ballRotation = false
     
     func addBall(ball : UIView) {
         dynamicAnimator?.referenceView?.addSubview(ball)
@@ -45,5 +51,29 @@ class BreakoutBallBehavior: UIDynamicBehavior {
         collider.removeItem(ball)
         ballBehavior.removeItem(ball)
         ball.removeFromSuperview()
+    }
+    
+    func throwBalls(balls : [UIView], magnitude : CGFloat) {
+        let throw = UIPushBehavior(items: balls, mode: UIPushBehaviorMode.Instantaneous)
+        throw.magnitude = magnitude
+        throw.angle = CGFloat.randomAngle()
+        throw.action = { [weak throw, unowned self] in
+            if !throw!.active {
+                self.removeChildBehavior(throw!)
+            }
+        }
+        addChildBehavior(throw)
+    }
+    
+    func addBarrier(path: UIBezierPath, named name: String) {
+        collider.removeBoundaryWithIdentifier(name)
+        collider.addBoundaryWithIdentifier(name, forPath: path)
+    }
+    
+}
+
+private extension CGFloat {
+    static func randomAngle() -> CGFloat {
+        return CGFloat(Double(arc4random()) * M_PI * 2 / Double(UINT32_MAX))
     }
 }
