@@ -30,6 +30,7 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         static let bricksColumnCount = 15
         static let brickSpacing = 1
         static let bricksViewPercentage : CGFloat = 0.5
+        static let brickKillAnimationDuration = 0.3
         static let brickBarrierIdentifierPrefix = "brickbarrier"
         
         static let leftViewBarrierIdentifier = "Left Barrier"
@@ -48,8 +49,15 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         print(identifier)
         if let id = identifier as? String {
             if let brick = bricks.removeValueForKey(id) {
-                brick.removeFromSuperview()
-                ballBehavior.removeBarrier(named: id)
+                UIView.animateWithDuration(BreakoutSettings.brickKillAnimationDuration,
+                    delay: 0,
+                    options: UIViewAnimationOptions.CurveEaseOut,
+                    animations: {brick.alpha = 0.0},
+                    completion: { (_) -> Void in
+                        brick.removeFromSuperview()
+                        self.ballBehavior.removeBarrier(named: id)
+                })
+                
             }
         }
         
