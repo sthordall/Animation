@@ -12,12 +12,17 @@ class BreakoutBallBehavior: UIDynamicBehavior {
     private var gravity = UIGravityBehavior()
     private lazy var collider : UICollisionBehavior = {
         let lazyCollider = UICollisionBehavior()
-        lazyCollider.translatesReferenceBoundsIntoBoundary = true
+        lazyCollider.action = {
+            for ball in self.balls {
+                if !CGRectIntersectsRect(self.dynamicAnimator!.referenceView!.bounds, ball.frame) {
+                    self.removeBall(ball)
+                }
+            }
+        }
         return lazyCollider
     }()
     private lazy var ballBehavior : UIDynamicItemBehavior = {
         let lazyBehavior = UIDynamicItemBehavior()
-        lazyBehavior.allowsRotation = true
         lazyBehavior.elasticity = self.ballElasticity
         lazyBehavior.friction = self.ballFriction
         lazyBehavior.resistance = self.ballResistance
@@ -37,13 +42,15 @@ class BreakoutBallBehavior: UIDynamicBehavior {
     var ballElasticity : CGFloat = 1
     var ballFriction : CGFloat = 0
     var ballResistance : CGFloat = 0
-    var ballRotation = false
+    var ballRotation = true
+    var balls = [UIView]()
     
     func addBall(ball : UIView) {
         dynamicAnimator?.referenceView?.addSubview(ball)
         gravity.addItem(ball)
         collider.addItem(ball)
         ballBehavior.addItem(ball)
+        balls.append(ball)
     }
     
     func removeBall(ball : UIView) {
@@ -51,9 +58,11 @@ class BreakoutBallBehavior: UIDynamicBehavior {
         collider.removeItem(ball)
         ballBehavior.removeItem(ball)
         ball.removeFromSuperview()
+        balls.removeAtIndex(find(balls, ball)!)
     }
     
-    func throwBalls(balls : [UIView], magnitude : CGFloat) {
+    func throwBalls(magnitude : CGFloat) {
+        let balls = ballBehavior.items as? [UIView]
         let throw = UIPushBehavior(items: balls, mode: UIPushBehaviorMode.Instantaneous)
         throw.magnitude = magnitude
         throw.angle = CGFloat.randomAngle()
@@ -70,6 +79,14 @@ class BreakoutBallBehavior: UIDynamicBehavior {
         collider.addBoundaryWithIdentifier(name, forPath: path)
     }
     
+    func addBarrier(fromPoint: CGPoint, toPoint: CGPoint, named name: String) {
+        collider.removeBoundaryWithIdentifier(name)
+        collider.addBoundaryWithIdentifier(name, fromPoint: fromPoint, toPoint: toPoint)
+    }
+    
+    func assignCollisionBehviorDelegate(delegate: UICollisionBehaviorDelegate) {
+        collider.collisionDelegate = delegate
+    }
 }
 
 private extension CGFloat {

@@ -8,23 +8,23 @@
 
 import UIKit
 
-class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
+class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICollisionBehaviorDelegate {
 
     @IBOutlet weak var breakoutView: UIView!
     
     // MARK: Breakout game constants
     private struct BreakoutSettings {
-        static let paddleWidthPercentage : CGFloat = 0.15
+        static let paddleWidthPercentage : CGFloat = 0.2
         static let paddleHeight : CGFloat = 15
-        static let paddleFloat : CGFloat = -50
+        static let paddleFloat : CGFloat = 10
         static func paddleSize(view : UIView) -> CGSize {
             let width = view.bounds.size.width * paddleWidthPercentage
             return CGSize(width: width, height: paddleHeight)
         }
-        static let paddleBarrierName = "BreakoutPaddle"
+        static let paddleBarrierName : String = "BreakoutPaddle"
         
         static let ballRadius : CGFloat = 10
-        static let ballThrowMagnitude : CGFloat = 0.5
+        static let ballThrowMagnitude : CGFloat = 0.1
         
         static let brickRowCount : CGFloat = 4
         static let bricksColumnCount : CGFloat = 8
@@ -37,6 +37,10 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
             let width = view.bounds.size.width / bricksColumnCount - brickSpacing
             return CGSize(width: width, height: height)
         }
+        
+        static let leftViewBarrierIdentifier = "Left Barrier"
+        static let rightViewBarrierIdentifier = "Right Barrier"
+        static let topViewBarrierIdentifier = "Top Barrier"
     }
     
     // MARK: Animators and Behaviors
@@ -45,6 +49,11 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
         lazyAnimator.delegate = self
         return lazyAnimator
     }()
+    
+    func collisionBehavior(behavior: UICollisionBehavior, beganContactForItem item: UIDynamicItem, withBoundaryIdentifier identifier: NSCopying, atPoint p: CGPoint) {
+        print(identifier)
+        
+    }
     
     private let ballBehavior = BreakoutBallBehavior()
     
@@ -56,6 +65,8 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
         lazyPaddle.backgroundColor = UIColor.randomBoyish
         return lazyPaddle
     }()
+    
+    private var paddleHasBeenAdded = false
    
     func grabPaddle(gesture : UIPanGestureRecognizer) {
         let gesturePoint = gesture.locationInView(breakoutView)
@@ -106,8 +117,9 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
     }
     
     func throwBalls() {
-        ballBehavior.throwBalls(balls, magnitude: BreakoutSettings.ballThrowMagnitude)
+        ballBehavior.throwBalls(BreakoutSettings.ballThrowMagnitude)
     }
+    
     
     // MARK: View Lifecycle
     override func viewDidLoad() {
@@ -116,11 +128,23 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate {
         breakoutView.addGestureRecognizer(doubleTapGestureRecognizer)
         breakoutView.addGestureRecognizer(singleTapGestureRecognizer)
         breakoutView.addGestureRecognizer(panGestureRecognizer)
-        breakoutView.addSubview(paddle)
+        ballBehavior.assignCollisionBehviorDelegate(self)
+        
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        if !paddleHasBeenAdded {
+            breakoutView.addSubview(paddle)
+        }
+        let leftTop = CGPoint(x: breakoutView.bounds.minX, y: breakoutView.bounds.minY)
+        let leftBottom = CGPoint(x: breakoutView.bounds.minX, y: breakoutView.bounds.maxY)
+        let rightTop = CGPoint(x: breakoutView.bounds.maxX, y: breakoutView.bounds.minY)
+        let rightBottom = CGPoint(x: breakoutView.bounds.maxX, y: breakoutView.bounds.maxY)
+        
+        ballBehavior.addBarrier(leftTop, toPoint: leftBottom, named: BreakoutSettings.leftViewBarrierIdentifier)
+        ballBehavior.addBarrier(rightTop, toPoint: rightBottom, named: BreakoutSettings.rightViewBarrierIdentifier)
+        ballBehavior.addBarrier(leftTop, toPoint: rightTop, named: BreakoutSettings.topViewBarrierIdentifier)
     }
     
     // MARK: Dynamic Animator Delegation
