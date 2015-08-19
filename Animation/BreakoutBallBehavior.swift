@@ -42,7 +42,7 @@ class BreakoutBallBehavior: UIDynamicBehavior {
     var ballElasticity : CGFloat = 1
     var ballFriction : CGFloat = 0
     var ballResistance : CGFloat = 0
-    var ballRotation = true
+    var ballRotation = false
     var balls = [UIView]()
     
     func addBall(ball : UIView) {
@@ -82,6 +82,10 @@ class BreakoutBallBehavior: UIDynamicBehavior {
     func addBarrier(fromPoint: CGPoint, toPoint: CGPoint, named name: String) {
         collider.removeBoundaryWithIdentifier(name)
         collider.addBoundaryWithIdentifier(name, fromPoint: fromPoint, toPoint: toPoint)
+    }
+    
+    func removeBarrier(named name: String) {
+        collider.removeBoundaryWithIdentifier(name)
     }
     
     func assignCollisionBehviorDelegate(delegate: UICollisionBehaviorDelegate) {

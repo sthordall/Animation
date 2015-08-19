@@ -24,12 +24,13 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         static let paddleBarrierName : String = "BreakoutPaddle"
         
         static let ballRadius : CGFloat = 10
-        static let ballThrowMagnitude : CGFloat = 0.1
+        static let ballThrowMagnitude : CGFloat = 0.5
         
-        static let brickRowCount = 4
-        static let bricksColumnCount = 5
-        static let brickSpacing = 10
-        static let bricksViewPercentage : CGFloat = 0.3
+        static let brickRowCount = 10
+        static let bricksColumnCount = 15
+        static let brickSpacing = 1
+        static let bricksViewPercentage : CGFloat = 0.5
+        static let brickBarrierIdentifierPrefix = "brickbarrier"
         
         static let leftViewBarrierIdentifier = "Left Barrier"
         static let rightViewBarrierIdentifier = "Right Barrier"
@@ -45,6 +46,12 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     
     func collisionBehavior(behavior: UICollisionBehavior, beganContactForItem item: UIDynamicItem, withBoundaryIdentifier identifier: NSCopying, atPoint p: CGPoint) {
         print(identifier)
+        if let id = identifier as? String {
+            if let brick = bricks.removeValueForKey(id) {
+                brick.removeFromSuperview()
+                ballBehavior.removeBarrier(named: id)
+            }
+        }
         
     }
     
@@ -111,7 +118,10 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
                 let brickFrame = CGRect(x: brickOriginX, y: brickOriginY, width: brickWidth, height: brickHeight)
                 let brickView = UIView(frame: brickFrame)
                 brickView.backgroundColor = UIColor.randomBoyish
+                let brickBarrierIdentifier = BreakoutSettings.brickBarrierIdentifierPrefix + "_\(column)_\(row)"
+                bricks.updateValue(brickView, forKey: brickBarrierIdentifier)
                 breakoutView.addSubview(brickView)
+                ballBehavior.addBarrier(UIBezierPath(rect: brickFrame), named: brickBarrierIdentifier)
             }
         }
     }
@@ -157,6 +167,10 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
         breakoutView.addSubview(paddle)
         setupBricks()
         setupViewBarriers()
