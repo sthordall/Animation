@@ -26,8 +26,8 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         static let ballRadius : CGFloat = 10
         static let ballThrowMagnitude : CGFloat = 0.5
         
-        static let brickRowCount = 10
-        static let bricksColumnCount = 15
+        static let brickRowCount = 2
+        static let bricksColumnCount = 2
         static let brickSpacing = 1
         static let bricksViewPercentage : CGFloat = 0.5
         static let brickKillAnimationDuration = 0.8
@@ -46,7 +46,6 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     }()
     
     func collisionBehavior(behavior: UICollisionBehavior, beganContactForItem item: UIDynamicItem, withBoundaryIdentifier identifier: NSCopying, atPoint p: CGPoint) {
-        print(identifier)
         if let id = identifier as? String {
             if let brick = bricks.removeValueForKey(id) {
                 UIView.transitionWithView(brick, duration: BreakoutSettings.brickKillAnimationDuration, options: UIViewAnimationOptions.TransitionFlipFromBottom, animations: {brick.backgroundColor = UIColor.randomGirlish}, completion: { (_) -> Void in
@@ -60,6 +59,10 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
                     })
                 })
             }
+            if bricks.count <= 0 {
+                gameOver()
+            }
+            
         }
         
     }
@@ -86,9 +89,7 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         lazyPaddle.backgroundColor = UIColor.randomBoyish
         return lazyPaddle
     }()
-    
-    private var paddleHasBeenAdded = false
-   
+  
     func grabPaddle(gesture : UIPanGestureRecognizer) {
         let gesturePoint = gesture.locationInView(breakoutView)
         switch gesture.state {
@@ -98,13 +99,6 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
             addPaddleBarrier()
         default: break
         }
-    }
-    
-    private func placePaddle(translation: CGPoint) {
-        var origin = paddle.frame.origin
-        origin.x = max(min(origin.x + translation.x, breakoutView.bounds.maxX - BreakoutSettings.paddleSize(breakoutView).width), 0.0)
-        paddle.frame.origin = origin
-        addPaddleBarrier()
     }
     
     private func addPaddleBarrier() {
@@ -163,6 +157,32 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         ballBehavior.throwBalls(BreakoutSettings.ballThrowMagnitude)
     }
     
+    // MARK: Game Lifecycle
+    private struct BreakoutGameLabels {
+        static let GameOverTitle = "Game Over"
+        static let PlayAgainTitle = "Play Again"
+        static let GameOverMessage = "You've destroyed all the bricks! Touch below to play again."
+    }
+    
+    private func startGame() {
+        paddle.removeFromSuperview()
+        breakoutView.addSubview(paddle)
+        addPaddleBarrier()
+        setupBricks()
+        setupViewBarriers()
+    }
+    
+    private func gameOver() {
+        for ball in ballBehavior.balls {
+            ballBehavior.removeBall(ball)
+        }
+        let gameOverModalController = UIAlertController(title: BreakoutGameLabels.GameOverTitle, message: BreakoutGameLabels.GameOverMessage, preferredStyle: .Alert)
+        gameOverModalController.addAction(UIAlertAction(title: BreakoutGameLabels.PlayAgainTitle, style: .Default, handler: { (action) in
+            self.startGame()
+        }))
+        presentViewController(gameOverModalController, animated: true, completion: nil)
+    }
+    
     
     // MARK: View Lifecycle
     override func viewDidLoad() {
@@ -180,18 +200,7 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        breakoutView.addSubview(paddle)
-        setupBricks()
-        setupViewBarriers()
-    }
-    
-    // MARK: Dynamic Animator Delegation
-    func dynamicAnimatorDidPause(animator: UIDynamicAnimator) {
-        //TODO: Do something when pausing
-    }
-    
-    func dynamicAnimatorWillResume(animator: UIDynamicAnimator) {
-        //TODO: Do something on resuming
+        startGame()
     }
     
     // MARK: Gesture Recognizers
