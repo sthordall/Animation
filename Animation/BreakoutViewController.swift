@@ -11,27 +11,16 @@ import UIKit
 class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICollisionBehaviorDelegate {
 
     @IBOutlet weak var breakoutView: UIView!
-    private let settings = Settings()
+    let settings = Settings()
+    
+    private func paddleSize(view : UIView) -> CGSize {
+        let width = view.bounds.size.width * settings.paddleWidthPercentage
+        return CGSize(width: width, height: settings.paddleHeight)
+    }
     
     // MARK: Breakout game constants
-    private struct BreakoutSettings {
-        static let paddleWidthPercentage : CGFloat = 0.8
-        static let paddleHeight : CGFloat = 15
-        static let paddleFloat : CGFloat = 10
-        static func paddleSize(view : UIView) -> CGSize {
-            let width = view.bounds.size.width * paddleWidthPercentage
-            return CGSize(width: width, height: paddleHeight)
-        }
+    private struct BreakoutIdentifiers {
         static let paddleBarrierName : String = "BreakoutPaddle"
-        
-        static let ballRadius : CGFloat = 10
-        static let ballThrowMagnitude : CGFloat = 0.5
-        
-        static let brickRowCount = 2
-        static let bricksColumnCount = 2
-        static let brickSpacing = 1
-        static let bricksViewPercentage : CGFloat = 0.5
-        static let brickKillAnimationDuration = 0.2 
         static let brickBarrierIdentifierPrefix = "brickbarrier"
         
         static let leftViewBarrierIdentifier = "Left Barrier"
@@ -49,8 +38,8 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     func collisionBehavior(behavior: UICollisionBehavior, beganContactForItem item: UIDynamicItem, withBoundaryIdentifier identifier: NSCopying, atPoint p: CGPoint) {
         if let id = identifier as? String {
             if let brick = bricks.removeValueForKey(id) {
-                UIView.transitionWithView(brick, duration: BreakoutSettings.brickKillAnimationDuration, options: UIViewAnimationOptions.TransitionFlipFromBottom, animations: {brick.backgroundColor = UIColor.randomGirlish}, completion: { (_) -> Void in
-                    UIView.animateWithDuration(BreakoutSettings.brickKillAnimationDuration,
+                UIView.transitionWithView(brick, duration: settings.brickKillAnimationDuration, options: UIViewAnimationOptions.TransitionFlipFromBottom, animations: {brick.backgroundColor = UIColor.randomGirlish}, completion: { (_) -> Void in
+                    UIView.animateWithDuration(self.settings.brickKillAnimationDuration,
                         delay: 0,
                         options: UIViewAnimationOptions.CurveEaseOut,
                         animations: {brick.alpha = 0.0},
@@ -77,52 +66,64 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         let rightTop = CGPoint(x: breakoutView.bounds.maxX, y: breakoutView.bounds.minY)
         let rightBottom = CGPoint(x: breakoutView.bounds.maxX, y: breakoutView.bounds.maxY)
         
-        ballBehavior.addBarrier(leftTop, toPoint: leftBottom, named: BreakoutSettings.leftViewBarrierIdentifier)
-        ballBehavior.addBarrier(rightTop, toPoint: rightBottom, named: BreakoutSettings.rightViewBarrierIdentifier)
-        ballBehavior.addBarrier(leftTop, toPoint: rightTop, named: BreakoutSettings.topViewBarrierIdentifier)
+        ballBehavior.addBarrier(leftTop, toPoint: leftBottom, named: BreakoutIdentifiers.leftViewBarrierIdentifier)
+        ballBehavior.addBarrier(rightTop, toPoint: rightBottom, named: BreakoutIdentifiers.rightViewBarrierIdentifier)
+        ballBehavior.addBarrier(leftTop, toPoint: rightTop, named: BreakoutIdentifiers.topViewBarrierIdentifier)
     }
     
     // MARK: Paddle
-    private lazy var paddle : UIView = { [unowned self] in
-        var lazyPaddle = UIView()
-        lazyPaddle.center =  CGPoint(x: self.breakoutView.bounds.midX, y: self.breakoutView.bounds.maxY - BreakoutSettings.paddleFloat - BreakoutSettings.paddleHeight)
-        lazyPaddle.bounds.size = BreakoutSettings.paddleSize(self.breakoutView)
-        lazyPaddle.backgroundColor = UIColor.randomBoyish
-        return lazyPaddle
-    }()
+    
+    var paddle : UIView?
+    
+    func createPaddle() -> UIView {
+        var paddle = UIView()
+        paddle.center =  CGPoint(x: breakoutView.bounds.midX, y: breakoutView.bounds.maxY - settings.paddleFloat - settings.paddleHeight)
+        paddle.bounds.size = paddleSize(breakoutView)
+        paddle.backgroundColor = UIColor.randomBoyish
+        return paddle
+    }
   
     func grabPaddle(gesture : UIPanGestureRecognizer) {
         let gesturePoint = gesture.locationInView(breakoutView)
         switch gesture.state {
         case .Began: fallthrough
         case .Changed:
-            paddle.center.x = gesturePoint.x
-            addPaddleBarrier()
+            paddle?.center.x = gesturePoint.x
+            addPaddle()
         default: break
         }
     }
     
-    private func addPaddleBarrier() {
-        ballBehavior.addBarrier(UIBezierPath(rect: paddle.frame), named: BreakoutSettings.paddleBarrierName)
+    func addPaddle() {
+        if paddle == nil {
+            paddle = createPaddle()
+            breakoutView.addSubview(paddle!)
+        }
+        ballBehavior.addBarrier(UIBezierPath(rect: paddle!.frame), named: BreakoutIdentifiers.paddleBarrierName)
+    }
+    
+    func removePaddle() {
+        paddle?.removeFromSuperview()
+        paddle = nil
     }
     
     // MARK: Bricks
     var bricks = [String:UIView]()
     
     func setupBricks() {
-        let brickWidth = breakoutView.bounds.width / CGFloat(BreakoutSettings.bricksColumnCount)
-                        - CGFloat(BreakoutSettings.brickSpacing);
-        let brickHeight = breakoutView.bounds.height * CGFloat(BreakoutSettings.bricksViewPercentage)
-                        / CGFloat(BreakoutSettings.brickRowCount) - CGFloat(BreakoutSettings.brickSpacing);
+        let brickWidth = breakoutView.bounds.width / CGFloat(settings.bricksColumnCount)
+                        - CGFloat(settings.brickSpacing);
+        let brickHeight = breakoutView.bounds.height * CGFloat(settings.bricksViewPercentage)
+                        / CGFloat(settings.brickRowCount) - CGFloat(settings.brickSpacing);
         
-        for column in 0..<BreakoutSettings.bricksColumnCount {
-            for row in 0..<BreakoutSettings.brickRowCount {
-                let brickOriginX = breakoutView.bounds.minX + CGFloat(column) * brickWidth + CGFloat(column) * CGFloat(BreakoutSettings.brickSpacing) + CGFloat(BreakoutSettings.brickSpacing/2)
-                let brickOriginY = breakoutView.bounds.minY + CGFloat(row) * brickHeight + CGFloat(row) * CGFloat(BreakoutSettings.brickSpacing) + CGFloat(BreakoutSettings.brickSpacing/2)
+        for column in 0..<settings.bricksColumnCount {
+            for row in 0..<settings.brickRowCount {
+                let brickOriginX = breakoutView.bounds.minX + CGFloat(column) * brickWidth + CGFloat(column) * CGFloat(settings.brickSpacing) + CGFloat(settings.brickSpacing/2)
+                let brickOriginY = breakoutView.bounds.minY + CGFloat(row) * brickHeight + CGFloat(row) * CGFloat(settings.brickSpacing) + CGFloat(settings.brickSpacing/2)
                 let brickFrame = CGRect(x: brickOriginX, y: brickOriginY, width: brickWidth, height: brickHeight)
                 let brickView = UIView(frame: brickFrame)
                 brickView.backgroundColor = UIColor.randomBoyish
-                let brickBarrierIdentifier = BreakoutSettings.brickBarrierIdentifierPrefix + "_\(column)_\(row)"
+                let brickBarrierIdentifier = BreakoutIdentifiers.brickBarrierIdentifierPrefix + "_\(column)_\(row)"
                 bricks.updateValue(brickView, forKey: brickBarrierIdentifier)
                 breakoutView.addSubview(brickView)
                 ballBehavior.addBarrier(UIBezierPath(rect: brickFrame), named: brickBarrierIdentifier)
@@ -141,9 +142,9 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     func addBall(origin: CGPoint) {
         let ball = UIView()
         ball.center = origin
-        ball.bounds.size.height = BreakoutSettings.ballRadius * 2
-        ball.bounds.size.width = BreakoutSettings.ballRadius * 2
-        ball.layer.cornerRadius = BreakoutSettings.ballRadius
+        ball.bounds.size.height = settings.ballRadius * 2
+        ball.bounds.size.width = settings.ballRadius * 2
+        ball.layer.cornerRadius = settings.ballRadius
         ball.backgroundColor = UIColor.randomGirlish
         ballBehavior.addBall(ball)
         balls.append(ball)
@@ -166,11 +167,20 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     }
     
     private func startGame() {
-        paddle.removeFromSuperview()
-        breakoutView.addSubview(paddle)
-        addPaddleBarrier()
+        addPaddle()
         setupBricks()
         setupViewBarriers()
+    }
+    
+    private func removeGame() {
+        removePaddle()
+        ballBehavior.removeAllBarriers()
+        for view in breakoutView.subviews {
+            view.removeFromSuperview()
+        }
+        for ball in balls {
+            ball.removeFromSuperview()
+        }
     }
     
     private func gameOver() {
@@ -179,6 +189,7 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         }
         let gameOverModalController = UIAlertController(title: BreakoutGameLabels.GameOverTitle, message: BreakoutGameLabels.GameOverMessage, preferredStyle: .Alert)
         gameOverModalController.addAction(UIAlertAction(title: BreakoutGameLabels.PlayAgainTitle, style: .Default, handler: { (action) in
+            self.removeGame()
             self.startGame()
         }))
         presentViewController(gameOverModalController, animated: true, completion: nil)
@@ -202,6 +213,11 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         startGame()
+    }
+    
+    override func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated)
+        removeGame()
     }
     
     // MARK: Gesture Recognizers

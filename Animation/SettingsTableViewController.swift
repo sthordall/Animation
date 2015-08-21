@@ -24,6 +24,7 @@ class SettingsTableViewController: UITableViewController {
             radiusStepper.maximumValue = SettingBoundaries.radiusMaximum
             radiusStepper.minimumValue = SettingBoundaries.radiusMinimum
             radiusStepper.stepValue = SettingBoundaries.radiusStepValue
+            radiusStepper.value = Double(settings.ballRadius)
         }
     }
     
@@ -107,12 +108,12 @@ class SettingsTableViewController: UITableViewController {
     }
     
     private func getPercentage(numberValue : Double) -> String {
-        return "\(numberValue * 100)%"
+        return "\(Int(numberValue * 100))%"
     }
     
     @IBOutlet weak var brickViewPercentageValue: UILabel! {
         didSet{
-            brickViewPercentageValue.text = getPercentage(Double(settings.brickSpacing))
+            brickViewPercentageValue.text = getPercentage(Double(settings.bricksViewPercentage))
         }
     }
     
@@ -213,11 +214,11 @@ class SettingsTableViewController: UITableViewController {
         static let brickAnimationSlowValue : Double = 0.6
         static let brickAnimationMediumValue : Double = 0.4
         static let brickAnimationFastValue : Double = 0.2
-        static let paddleSwitchNotTallValue : Double = 50
-        static let paddleSwitchTallValue : Double = 200
-        static let paddleWidthPercentageNarrow : Double = 0.2
-        static let paddleWidthPercentageMedium : Double = 0.4
-        static let paddleWidthPercentageWide : Double = 0.6
+        static let paddleSwitchNotTallValue : Double = 10
+        static let paddleSwitchTallValue : Double = 50
+        static let paddleWidthPercentageNarrow : Double = 0.4
+        static let paddleWidthPercentageMedium : Double = 0.6
+        static let paddleWidthPercentageWide : Double = 0.8
         
     }
     

@@ -88,6 +88,10 @@ class BreakoutBallBehavior: UIDynamicBehavior {
         collider.removeBoundaryWithIdentifier(name)
     }
     
+    func removeAllBarriers() {
+        collider.removeAllBoundaries()
+    }
+    
     func assignCollisionBehviorDelegate(delegate: UICollisionBehaviorDelegate) {
         collider.collisionDelegate = delegate
     }
