@@ -11,6 +11,7 @@ import UIKit
 class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICollisionBehaviorDelegate {
 
     @IBOutlet weak var breakoutView: UIView!
+    private let settings = Settings()
     
     // MARK: Breakout game constants
     private struct BreakoutSettings {
@@ -30,7 +31,7 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
         static let bricksColumnCount = 2
         static let brickSpacing = 1
         static let bricksViewPercentage : CGFloat = 0.5
-        static let brickKillAnimationDuration = 0.8
+        static let brickKillAnimationDuration = 0.2 
         static let brickBarrierIdentifierPrefix = "brickbarrier"
         
         static let leftViewBarrierIdentifier = "Left Barrier"
@@ -154,7 +155,7 @@ class BreakoutViewController: UIViewController, UIDynamicAnimatorDelegate, UICol
     }
     
     func throwBalls() {
-        ballBehavior.throwBalls(BreakoutSettings.ballThrowMagnitude)
+        ballBehavior.throwBalls(settings.ballThrowMagnitude)
     }
     
     // MARK: Game Lifecycle

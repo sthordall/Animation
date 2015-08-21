@@ -14,6 +14,8 @@
 		2F28E1F11B7F61E300D0922A /* AnimationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F28E1F01B7F61E300D0922A /* AnimationTests.swift */; };
 		2F28E1FB1B7F641600D0922A /* BreakoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F28E1FA1B7F641600D0922A /* BreakoutViewController.swift */; };
 		2F28E1FD1B7F6A0500D0922A /* BreakoutBallBehavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F28E1FC1B7F6A0500D0922A /* BreakoutBallBehavior.swift */; };
+		2F28E1FF1B864AA600D0922A /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F28E1FE1B864AA600D0922A /* SettingsTableViewController.swift */; };
+		2F28E2011B864BD600D0922A /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F28E2001B864BD600D0922A /* Settings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +40,8 @@
 		2F28E1F01B7F61E300D0922A /* AnimationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationTests.swift; sourceTree = "<group>"; };
 		2F28E1FA1B7F641600D0922A /* BreakoutViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BreakoutViewController.swift; sourceTree = "<group>"; };
 		2F28E1FC1B7F6A0500D0922A /* BreakoutBallBehavior.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BreakoutBallBehavior.swift; sourceTree = "<group>"; };
+		2F28E1FE1B864AA600D0922A /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		2F28E2001B864BD600D0922A /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +87,8 @@
 				2F28E1FA1B7F641600D0922A /* BreakoutViewController.swift */,
 				2F28E1FC1B7F6A0500D0922A /* BreakoutBallBehavior.swift */,
 				2F28E1D81B7F61E300D0922A /* Supporting Files */,
+				2F28E1FE1B864AA600D0922A /* SettingsTableViewController.swift */,
+				2F28E2001B864BD600D0922A /* Settings.swift */,
 			);
 			path = Animation;
 			sourceTree = "<group>";
@@ -215,9 +221,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F28E1FF1B864AA600D0922A /* SettingsTableViewController.swift in Sources */,
 				2F28E1FD1B7F6A0500D0922A /* BreakoutBallBehavior.swift in Sources */,
 				2F28E1DB1B7F61E300D0922A /* AppDelegate.swift in Sources */,
 				2F28E1FB1B7F641600D0922A /* BreakoutViewController.swift in Sources */,
+				2F28E2011B864BD600D0922A /* Settings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
